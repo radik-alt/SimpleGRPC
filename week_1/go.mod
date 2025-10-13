@@ -4,7 +4,6 @@ go 1.24
 
 require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
-	github.com/olezhek28/microservices_course/week_1/grpc v0.0.0-20240730180403-7726e2b3b758
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.36.10
 )
