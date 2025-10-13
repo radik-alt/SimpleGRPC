@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/brianvoe/gofakeit"
-	desc "github.com/olezhek28/microservices_course/week_1/grpc/pkg/note_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 	"net"
+	desc "week_1/grpc/pkg/note_v1"
 )
 
 const (
@@ -28,7 +28,7 @@ func (s *server) Get(ctx context.Context, req *desc.GetRequest) (*desc.GetRespon
 			Id: req.GetId(),
 			Info: &desc.NoteInfo{
 				Title:    gofakeit.BeerName(),
-				Content:  gofakeit.IPv4Address(),
+				Context:  gofakeit.IPv4Address(),
 				Author:   gofakeit.Name(),
 				IsPublic: gofakeit.Bool(),
 			},
