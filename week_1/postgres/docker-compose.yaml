@@ -2,6 +2,8 @@ version: '3.8'
 
 volumes:
   postgres_volume:
+  postgres_auth_volume:
+  postgres_chat_volume:
 
 networks:
   my_network:
@@ -20,7 +22,45 @@ services:
     networks:
       - my_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-db:
+    image: postgres:16.3-alpine3.20
+    container_name: auth-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_AUTH}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_AUTH}
+      POSTGRES_DB: ${POSTGRES_DB_AUTH}
+    ports:
+      - "54322:5432"
+    volumes:
+      - postgres_auth_volume:/var/lib/postgresql/data
+    networks:
+      - my_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER_AUTH} -d ${POSTGRES_DB_AUTH}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  chat-server-db:
+    image: postgres:16.3-alpine3.20
+    container_name: chat-server-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_CHAT_SERVER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_CHAT_SERVER}
+      POSTGRES_DB: ${POSTGRES_DB_CHAT_SERVER}
+    ports:
+      - "54323:5432"
+    volumes:
+      - postgres_chat_volume:/var/lib/postgresql/data
+    networks:
+      - my_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER_CHAT_SERVER} -d ${POSTGRES_DB_CHAT_SERVER}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -35,6 +75,44 @@ services:
       DB_PORT: 5432
     depends_on:
       pg:
+        condition: service_healthy
+    networks:
+      - my_network
+
+  migrator-auth:
+    build:
+      context: .
+      dockerfile: migration_auth.Dockerfile
+    container_name: migrator-auth
+    environment:
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB_AUTH}
+      DB_USER: ${POSTGRES_USER_AUTH}
+      DB_PASSWORD: ${POSTGRES_PASSWORD_AUTH}
+      MIGRATION_DIR: /migrations/auth
+    volumes:
+      - ./migrations/auth:/migrations/auth
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    networks:
+      - my_network
+
+  migrator-chat:
+    build:
+      context: .
+      dockerfile: migration_chat_server.Dockerfile
+    container_name: migrator-chat
+    environment:
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB_CHAT}
+      DB_USER: ${POSTGRES_USER_CHAT}
+      DB_PASSWORD: ${POSTGRES_PASSWORD_CHAT}
+      MIGRATION_DIR: /migrations/chat
+    volumes:
+      - ./migrations/chat:/migrations/chat
+    depends_on:
+      chat-server-db:
         condition: service_healthy
     networks:
       - my_network
