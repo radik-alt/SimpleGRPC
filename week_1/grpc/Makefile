@@ -32,3 +32,5 @@ docker-build-and-push:
 	docker login -u token -p CRgAAAAAj32PBeuHCHZ2UQ0OpWHAI8Jxduyqje3A cr.selcloud.ru/radik-alt
 	docker push cr.selcloud.ru/radik-alt/test-server:v0.0.1
 
+start-docker-demon:
+	sudo systemctl start docker
