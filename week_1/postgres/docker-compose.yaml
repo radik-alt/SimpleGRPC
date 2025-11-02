@@ -16,7 +16,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB_NAME}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "54321:5432"
     volumes:
       - postgres_volume:/var/lib/postgresql/data
     networks:
@@ -65,14 +65,19 @@ services:
       timeout: 5s
       retries: 5
 
-  migrator:
+  migrator-pg:
     build:
       context: .
-      dockerfile: migration.Dockerfile
+      dockerfile: migrator.Dockerfile
     restart: on-failure
+    container_name: migrator-pg
     environment:
       DB_HOST: pg
       DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB_NAME}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      MIGRATION_DIR: ./migrations/base_test
     depends_on:
       pg:
         condition: service_healthy
@@ -82,14 +87,15 @@ services:
   migrator-auth:
     build:
       context: .
-      dockerfile: migration_auth.Dockerfile
+      dockerfile: migrator.Dockerfile
     container_name: migrator-auth
     environment:
+      DB_HOST: auth-db
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB_AUTH}
       DB_USER: ${POSTGRES_USER_AUTH}
       DB_PASSWORD: ${POSTGRES_PASSWORD_AUTH}
-      MIGRATION_DIR: /migrations/auth
+      MIGRATION_DIR: ./migrations/auth
     depends_on:
       auth-db:
         condition: service_healthy
@@ -99,14 +105,15 @@ services:
   migrator-chat:
     build:
       context: .
-      dockerfile: migration_chat_server.Dockerfile
+      dockerfile: migrator.Dockerfile
     container_name: migrator-chat
     environment:
+      DB_HOST: chat-server-db
       DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB_CHAT}
-      DB_USER: ${POSTGRES_USER_CHAT}
-      DB_PASSWORD: ${POSTGRES_PASSWORD_CHAT}
-      MIGRATION_DIR: /migrations/chat
+      DB_NAME: ${POSTGRES_DB_CHAT_SERVER}
+      DB_USER: ${POSTGRES_USER_CHAT_SERVER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD_CHAT_SERVER}
+      MIGRATION_DIR: ./migrations/chat
     depends_on:
       chat-server-db:
         condition: service_healthy

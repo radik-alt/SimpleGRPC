@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	dbDSN = "host=localhost port=54321 dbname=note user=note-user password=note-password sslmode=disable"
+	dbDSN = "host=localhost port=54321 dbname=postgres user=postgres password=qwerty1 sslmode=disable"
 )
 
 func main() {
