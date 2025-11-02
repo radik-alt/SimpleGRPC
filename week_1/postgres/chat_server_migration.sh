@@ -1,6 +1,12 @@
 #!/bin/bash
+# Загружаем переменные из .env файла
 source .env
 
-export MIGRATION_DSN="host=chat-server-db port=5432 dbname=$POSTGRES_DB_CHAT_SERVER user=$POSTGRES_USER_CHAT_SERVER password=$POSTGRES_PASSWORD_CHAT_SERVER sslmode=disable"
+# Небольшая задержка на всякий случай, чтобы БД точно была готова
+sleep 2
 
-sleep 2 && goose -dir "${PG_DSN_CHAT_SERVER}" postgres "${MIGRATION_DSN_CHAT_SERVER}" up -v
+# Запускаем миграции
+# -dir - указывает путь к папке с SQL файлами
+# postgres - тип базы данных
+# "${MIGRATION_DSN_CHAT_SERVER}" - строка подключения к БД
+goose -dir "${MIGRATION_DIR_CHAT_SERVER}" postgres "${MIGRATION_DSN_CHAT_SERVER}" up -v

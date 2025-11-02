@@ -10,7 +10,7 @@ RUN chmod +x /bin/goose
 
 WORKDIR /root
 
-ADD migrations/*.sql migrations/
+ADD migrations/auth migrations/auth
 ADD auth_migration.sh .
 ADD .env .
 
