@@ -1,7 +1,6 @@
 -- +goose Up
 create table chat(
     id serial primary key,
-    toId serial,
     message text not null,
     created_at timestamp not null default now(),
     updated_at timestamp
