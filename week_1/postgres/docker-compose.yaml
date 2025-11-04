@@ -11,6 +11,7 @@ networks:
 services:
   pg:
     image: postgres:16.3-alpine3.20
+    container_name: pg
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

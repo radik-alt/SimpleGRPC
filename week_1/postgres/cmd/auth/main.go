@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/olezhek28/microservices_course/week_2/postgres/internal/config"
 	"log"
+	"os"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -70,7 +72,7 @@ func getAuthValueFromDb(pool *pgxpool.Pool, ctx context.Context) {
 	}
 }
 
-func main() {
+func initDb() {
 	ctx := context.Background()
 
 	pool, err := pgxpool.Connect(ctx, dbDSN)
@@ -81,4 +83,19 @@ func main() {
 
 	insertAuthToDb(pool, ctx)
 	getAuthValueFromDb(pool, ctx)
+}
+
+func main() {
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = "dev"
+	}
+
+	service := os.Getenv("SERVICE_NAME")
+	if service == "" {
+		service = "auth"
+	}
+
+	cfg := config.LoadConfig(env, service)
+	log.Printf("Running in %s mode, DB: %s:%s/%s", cfg.Env, cfg.DBHost, cfg.DBPort, cfg.DBName)
 }
