@@ -46,7 +46,7 @@ jobs:
       - name: Build Docker Compose services
         run: |
           APP_ENV=${{ needs.determine-env.outputs.env-name }} \
-          docker-compose -f docker-compose.yml build
+          docker-compose -f ./week_1/postgres/docker-compose.yml build
 
       - name: Push images to registry
         run: |
