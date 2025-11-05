@@ -46,12 +46,12 @@ jobs:
       - name: Build Docker Compose services
         run: |
           APP_ENV=${{ needs.determine-env.outputs.env-name }} \
-          docker-compose -f ./week_1/postgres/docker-compose.yml build
+          docker-compose -f ./week_1/postgres/docker-compose.yaml build
 
       - name: Push images to registry
         run: |
           TAG_NAME=$(echo $GITHUB_SHA | head -c7)
-          docker-compose -f docker-compose.yml push
+          docker-compose -f ./week_1/postgres/docker-compose.yaml push
 
   deploy:
     runs-on: ubuntu-latest
@@ -70,4 +70,4 @@ jobs:
             echo "Deploying environment: $ENV_NAME"
 
             # Передаем APP_ENV в контейнеры
-            APP_ENV=$ENV_NAME docker-compose --env-file ./week_1/postgres/.env -f ./week_1/postgres/docker-compose.yml up -d
+            APP_ENV=$ENV_NAME docker-compose --env-file ./week_1/postgres/.env -f ./week_1/postgres/docker-compose.yaml up -d
