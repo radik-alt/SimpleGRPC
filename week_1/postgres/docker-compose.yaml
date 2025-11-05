@@ -10,7 +10,7 @@ networks:
 
 services:
   pg:
-    image: postgres:16.3-alpine3.20
+    image: ${REGISTRY}/postgres:16.3-alpine3.20
     container_name: pg
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -23,13 +23,13 @@ services:
     networks:
       - my_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   auth-db:
-    image: postgres:16.3-alpine3.20
+    image: ${REGISTRY}/postgres:16.3-alpine3.20
     container_name: auth-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER_AUTH}
@@ -42,13 +42,13 @@ services:
     networks:
       - my_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER_AUTH} -d ${POSTGRES_DB_AUTH}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER_AUTH} -d ${POSTGRES_DB_AUTH}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   chat-server-db:
-    image: postgres:16.3-alpine3.20
+    image: ${REGISTRY}/postgres:16.3-alpine3.20
     container_name: chat-server-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER_CHAT_SERVER}
@@ -61,16 +61,13 @@ services:
     networks:
       - my_network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER_CHAT_SERVER} -d ${POSTGRES_DB_CHAT_SERVER}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER_CHAT_SERVER} -d ${POSTGRES_DB_CHAT_SERVER}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   migrator-pg:
-    build:
-      context: .
-      dockerfile: migrator.Dockerfile
-    restart: on-failure
+    image: ${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}
     container_name: migrator-pg
     environment:
       DB_HOST: pg
@@ -79,6 +76,7 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       MIGRATION_DIR: ./migrations/base_test
+      APP_ENV: ${APP_ENV}
     depends_on:
       pg:
         condition: service_healthy
@@ -86,9 +84,7 @@ services:
       - my_network
 
   migrator-auth:
-    build:
-      context: .
-      dockerfile: migrator.Dockerfile
+    image: ${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}
     container_name: migrator-auth
     environment:
       DB_HOST: auth-db
@@ -97,6 +93,7 @@ services:
       DB_USER: ${POSTGRES_USER_AUTH}
       DB_PASSWORD: ${POSTGRES_PASSWORD_AUTH}
       MIGRATION_DIR: ./migrations/auth
+      APP_ENV: ${APP_ENV}
     depends_on:
       auth-db:
         condition: service_healthy
@@ -104,9 +101,7 @@ services:
       - my_network
 
   migrator-chat:
-    build:
-      context: .
-      dockerfile: migrator.Dockerfile
+    image: ${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}
     container_name: migrator-chat
     environment:
       DB_HOST: chat-server-db
@@ -115,6 +110,7 @@ services:
       DB_USER: ${POSTGRES_USER_CHAT_SERVER}
       DB_PASSWORD: ${POSTGRES_PASSWORD_CHAT_SERVER}
       MIGRATION_DIR: ./migrations/chat
+      APP_ENV: ${APP_ENV}
     depends_on:
       chat-server-db:
         condition: service_healthy

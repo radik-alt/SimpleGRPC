@@ -91,11 +91,9 @@ func main() {
 		env = "dev"
 	}
 
-	service := os.Getenv("SERVICE_NAME")
-	if service == "" {
-		service = "auth"
-	}
+	cfgAuth := config.LoadConfig(env, "auth")
+	log.Printf("Running in %s mode, auth DB: %s:%s/%s", cfgAuth.Env, cfgAuth.DBHost, cfgAuth.DBPort, cfgAuth.DBName)
 
-	cfg := config.LoadConfig(env, service)
-	log.Printf("Running in %s mode, DB: %s:%s/%s", cfg.Env, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	cfgChat := config.LoadConfig(env, "chat")
+	log.Printf("Running in %s mode, auth DB: %s:%s/%s", cfgChat.Env, cfgChat.DBHost, cfgChat.DBPort, cfgChat.DBName)
 }
