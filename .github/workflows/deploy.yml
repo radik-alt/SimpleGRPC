@@ -25,9 +25,9 @@ jobs:
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             echo "env=prod" >> $GITHUB_OUTPUT
           elif [[ "${GITHUB_REF}" == refs/heads/master ]]; then
-            echo "env=stage" >> $GITHUB_OUTPUT
+            echo "env=prod" >> $GITHUB_OUTPUT
           else
-            echo "env=dev" >> $GITHUB_OUTPUT
+            echo "env=prod" >> $GITHUB_OUTPUT
           fi
 
   build-and-push:
@@ -70,4 +70,4 @@ jobs:
             echo "Deploying environment: $ENV_NAME"
 
             # Передаем APP_ENV в контейнеры
-            APP_ENV=prod docker-compose -f ./week_1/postgres/docker-compose.yaml up -d
+            APP_ENV=$ENV_NAME docker-compose -f ./week_1/postgres/docker-compose.yaml up -d
