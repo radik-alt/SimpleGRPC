@@ -10,7 +10,7 @@ networks:
 
 services:
   pg:
-    image: ${REGISTRY}/postgres:16.3-alpine3.20
+    image: postgres:16.3-alpine3.20
     container_name: pg
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -29,7 +29,7 @@ services:
       retries: 5
 
   auth-db:
-    image: ${REGISTRY}/postgres:16.3-alpine3.20
+    image: postgres:16.3-alpine3.20
     container_name: auth-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER_AUTH}
@@ -48,7 +48,7 @@ services:
       retries: 5
 
   chat-server-db:
-    image: ${REGISTRY}/postgres:16.3-alpine3.20
+    image: postgres:16.3-alpine3.20
     container_name: chat-server-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER_CHAT_SERVER}
@@ -67,7 +67,10 @@ services:
       retries: 5
 
   migrator-pg:
-    image: ${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}
+    build:
+      context: .
+      dockerfile: migrator.Dockerfile
+    restart: on-failure
     container_name: migrator-pg
     environment:
       DB_HOST: pg
@@ -84,7 +87,10 @@ services:
       - my_network
 
   migrator-auth:
-    image: ${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}
+    build:
+      context: .
+      dockerfile: migrator.Dockerfile
+    restart: on-failure
     container_name: migrator-auth
     environment:
       DB_HOST: auth-db
@@ -101,7 +107,10 @@ services:
       - my_network
 
   migrator-chat:
-    image: ${REGISTRY}/${IMAGE_NAME}:${TAG_NAME}
+    build:
+      context: .
+      dockerfile: migrator.Dockerfile
+    restart: on-failure
     container_name: migrator-chat
     environment:
       DB_HOST: chat-server-db
