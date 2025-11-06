@@ -57,26 +57,32 @@ jobs:
     runs-on: ubuntu-latest
     needs: [determine-env, build-and-push]
     steps:
-      - name: Deploy via SSH with Docker Compose
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Copy only docker-compose
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          source: "week_1/postgres/docker-compose.yaml"
+          target: "/opt/app/"
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          envs: REGISTRY,IMAGE_NAME,CONTAINER_NAME,GITHUB_SHA,APP_ENV
           script: |
             TAG_NAME=$(echo $GITHUB_SHA | head -c7)
-            ENV_NAME=${{ needs.determine-env.outputs.env-name }}  # ← ВОТ ТАК!
-            echo "Deploying environment: $ENV_NAME"
+            ENV_NAME=${{ needs.determine-env.outputs.env-name }}
             
-            echo "I'm on server: $(hostname)"
-            echo "Current directory: $(pwd)"
-            echo "Home directory: $HOME"
-            echo "Who am I: $(whoami)"
+            cd /opt/app
             
-            # Пытаемся найти проект
-            echo "Searching for docker-compose files:"
-            find / -name "docker-compose.yaml" 2>/dev/null | head -10
-
-            # Передаем APP_ENV в контейнеры
-            APP_ENV=$ENV_NAME docker-compose -f ./week_1/postgres/docker-compose.yaml up -d
+            # Логинимся в registry (если нужно)
+            echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login cr.selcloud.ru -u "${{ secrets.REGISTRY_USERNAME }}" --password-stdin
+            
+            # Запускаем
+            APP_ENV=$ENV_NAME docker-compose up -d
