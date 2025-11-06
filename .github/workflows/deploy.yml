@@ -85,4 +85,4 @@ jobs:
             echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login cr.selcloud.ru -u "${{ secrets.REGISTRY_USERNAME }}" --password-stdin
             
             # Запускаем
-            APP_ENV=$ENV_NAME -f ./week_1/postgres/docker-compose.yaml up -d
+            APP_ENV=$ENV_NAME docker-compose -f ./week_1/postgres/docker-compose.yaml up -d
