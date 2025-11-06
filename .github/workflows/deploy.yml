@@ -70,4 +70,4 @@ jobs:
             echo "Deploying environment: $ENV_NAME"
 
             # Передаем APP_ENV в контейнеры
-            APP_ENV=$ENV_NAME docker-compose -f ./week_1/postgres/docker-compose.yaml up -d
+            APP_ENV=prod docker-compose -f ./week_1/postgres/docker-compose.yaml up -d
