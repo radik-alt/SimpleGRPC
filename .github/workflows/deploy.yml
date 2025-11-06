@@ -55,7 +55,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [determine-env, build-and-push]
     steps:
       - name: Deploy via SSH with Docker Compose
         uses: appleboy/ssh-action@v1.0.0
@@ -66,8 +66,17 @@ jobs:
           envs: REGISTRY,IMAGE_NAME,CONTAINER_NAME,GITHUB_SHA,APP_ENV
           script: |
             TAG_NAME=$(echo $GITHUB_SHA | head -c7)
-            ENV_NAME=${{ needs.determine-env.outputs.env-name }}
+            ENV_NAME=${{ needs.determine-env.outputs.env-name }}  # ← ВОТ ТАК!
             echo "Deploying environment: $ENV_NAME"
+            
+            echo "I'm on server: $(hostname)"
+            echo "Current directory: $(pwd)"
+            echo "Home directory: $HOME"
+            echo "Who am I: $(whoami)"
+            
+            # Пытаемся найти проект
+            echo "Searching for docker-compose files:"
+            find / -name "docker-compose.yaml" 2>/dev/null | head -10
 
             # Передаем APP_ENV в контейнеры
             APP_ENV=$ENV_NAME docker-compose -f ./week_1/postgres/docker-compose.yaml up -d
