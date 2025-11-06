@@ -67,7 +67,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSHKEY }}
           source: "week_1/postgres/docker-compose.yaml, week_1/postgres/.env"
-          target: "/opt/app
+          target: "/opt/app"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
