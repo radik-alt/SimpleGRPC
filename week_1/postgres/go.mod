@@ -1,4 +1,4 @@
-module github.com/olezhek28/microservices_course/week_2/postgres
+module postgres
 
 go 1.24.0
 

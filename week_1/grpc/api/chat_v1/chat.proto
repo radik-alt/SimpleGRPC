@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package chat_v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "github.com/radik-alt/SimpleGRPC/week_1/grpc/pkg/chat_v1;chat_v1";
+
+service ChatV1 {
+
+  // Create a new chat message
+  rpc CreateMessage(CreateMessageRequest) returns (ChatMessage);
+
+  // Get chat message by id
+  rpc GetMessage(GetMessageRequest) returns (ChatMessage);
+
+  // List chat messages with pagination
+  rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
+
+  // Update chat message by id (partial update)
+  rpc UpdateMessage(UpdateMessageRequest) returns (ChatMessage);
+
+  // Delete chat message by id
+  rpc DeleteMessage(DeleteMessageRequest) returns (google.protobuf.Empty);
+}
+
+// Entity mapped to table `chat`
+message ChatMessage {
+  int64 id = 1;
+  string message = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// Create
+message CreateMessageRequest {
+  string message = 1;
+}
+
+// Read
+message GetMessageRequest {
+  int64 id = 1;
+}
+
+// List
+message ListMessagesRequest {
+  int32 limit = 1;   // number of items to return
+  int32 offset = 2;  // number of items to skip
+}
+
+message ListMessagesResponse {
+  repeated ChatMessage messages = 1;
+  int64 total_count = 2;
+}
+
+// Update (partial)
+message UpdateMessageRequest {
+  int64 id = 1;
+  google.protobuf.StringValue message = 2;
+}
+
+// Delete
+message DeleteMessageRequest {
+  int64 id = 1;
+}
