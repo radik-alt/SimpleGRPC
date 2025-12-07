@@ -1,10 +1,13 @@
 package repository
 
-import "context"
+import (
+	"context"
+	"postgres/internal/model"
+)
 
 type AuthRepository interface {
-	Create(ctx context.Context, username string, password string) (int64, error)
-	Get(ctx context.Context, id int64) (string, error)
+	Create(ctx context.Context, auth *model.Auth) (int64, error)
+	Get(ctx context.Context, id int64) (*model.Auth, error)
 }
 
 type ChatRepository interface {

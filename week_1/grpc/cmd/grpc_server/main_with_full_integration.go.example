@@ -1,0 +1,94 @@
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"net"
+
+	"github.com/jackc/pgx/v4/pgxpool"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
+	// Конфигурация
+	"week_1/grpc/internal/config"
+
+	// Handler слой (gRPC)
+	authHandler "week_1/grpc/internal/handler/auth"
+
+	// gRPC protobuf
+	authGrpc "week_1/grpc/pkg/auth_v1"
+	chatGrpc "week_1/grpc/pkg/chat_v1"
+	desc "week_1/grpc/pkg/note_v1"
+
+	// Service слой (бизнес-логика) - из модуля postgres
+	// Нужно добавить в go.mod: replace postgres => ../../postgres
+	authService "postgres/internal/service/auth"
+
+	// Repository слой (БД) - из модуля postgres
+	authRepo "postgres/internal/repository/auth"
+)
+
+var configPath string
+
+func init() {
+	flag.StringVar(&configPath, "config-path", "local.env", "path to config file")
+}
+
+func main() {
+	flag.Parse()
+	ctx := context.Background()
+
+	// 1. Загружаем конфигурацию
+	err := config.Load(configPath)
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	grpcConfig, err := config.NewGRPCConfig()
+	if err != nil {
+		log.Fatalf("failed to get grpc config: %v", err)
+	}
+
+	pgConfig, err := config.NewPGConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %v", err)
+	}
+
+	// 2. Подключаемся к БД
+	pool, err := pgxpool.Connect(ctx, pgConfig.DSN())
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer pool.Close()
+
+	// 3. Инициализируем слои (снизу вверх)
+	// Repository слой
+	authRepository := authRepo.NewRepository(*pool)
+
+	// Service слой
+	authSvc := authService.NewService(authRepository)
+
+	// Handler слой (gRPC)
+	authHdl := authHandler.NewHandler(authSvc)
+
+	// 4. Создаем gRPC сервер
+	lis, err := net.Listen("tcp", grpcConfig.GRPCAddress())
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	s := grpc.NewServer()
+	reflection.Register(s)
+
+	// Регистрируем сервисы
+	authGrpc.RegisterAuthV1Server(s, authHdl)
+	// chatGrpc.RegisterChatV1Server(s, chatHandler)
+	// desc.RegisterNoteV1Server(s, noteHandler)
+
+	log.Printf("server listening at %v", lis.Addr())
+
+	if err = s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}

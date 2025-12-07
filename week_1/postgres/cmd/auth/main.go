@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/olezhek28/microservices_course/week_2/postgres/internal/config"
 	"log"
 	"os"
+	"postgres/internal/config"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -96,4 +96,6 @@ func main() {
 
 	cfgChat := config.LoadConfig(env, "chat")
 	log.Printf("Running in %s mode, auth DB: %s:%s/%s", cfgChat.Env, cfgChat.DBHost, cfgChat.DBPort, cfgChat.DBName)
+
+	initDb()
 }
